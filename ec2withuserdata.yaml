@@ -6,12 +6,12 @@ Description: This template will create EC2 Instance with Userdata
     Properties: 
       ImageId: "ami-04505e74c0741db8d"
       InstanceType: t2.micro
-      KeyName: CustomVPC
+      KeyName: <Your Keyname>
       Tags:
         - Key: Name
           Value: "Ubuntu"
       SecurityGroupIds: 
-        - sg-06430544311d0afbf
+        - <Your default Security Group ID>
       UserData:
         Fn::Base64: 
           !Sub |
