@@ -5,11 +5,11 @@ Parameters:
   CustomVPC:
     Description: Select One VPC available in your existing account
     Type: AWS::EC2::VPC::Id
-    Default: "vpc-0a7cd5f987e5379fe"
+    Default: "<Your default VPC ID>"
   CustomInternetGateway:
     Description: Select One internet gateway available in your existing account
     Type: String
-    Default: "igw-0f49c140e9b981dc3"
+    Default: "<Your default Internet Gateway ID>"
 Resources:
   PrivateSubnet:
     Type: AWS::EC2::Subnet
