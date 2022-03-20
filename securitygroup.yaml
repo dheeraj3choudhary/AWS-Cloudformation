@@ -1,0 +1,22 @@
+# Author :- Dheeraj Choudhary
+AWSTemplateFormatVersion: 2010-09-09
+Description: This template will create security group and Enable SSH access and HTTP access on the inbound port
+Resources:
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: This group will allow all HTTP and SSH traffic
+      GroupName: AllowAllTraffic
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+Outputs:
+  outputInstanceSecurityGroup:
+    Description: A reference to the created security group
+    Value: !Ref InstanceSecurityGroup
