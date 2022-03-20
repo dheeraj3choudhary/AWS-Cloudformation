@@ -1,0 +1,55 @@
+# Author :- Dheeraj Choudhary
+AWSTemplateFormatVersion: 2010-09-09
+Description: This template will create public subnet, public route table and associate that route table to public subnet
+Parameters:
+  CustomVPC:
+    Description: Select One VPC available in your existing account
+    Type: AWS::EC2::VPC::Id
+    Default: "vpc-0a7cd5f987e5379fe"
+  CustomInternetGateway:
+    Description: Select One internet gateway available in your existing account
+    Type: String
+    Default: "igw-0f49c140e9b981dc3"
+Resources:
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      MapPublicIpOnLaunch: true
+      VpcId: !Ref CustomVPC
+      CidrBlock: 10.0.0.0/26
+      Tags:
+        - Key: Name
+          Value: PublicSubnet
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:  
+        Ref: CustomVPC
+      Tags:
+      - Key: Name
+        Value: PublicRouteTable
+  PublicRoute:   # Public route table has direct routing to IGW:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref CustomInternetGateway  
+  PublicSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref PublicRouteTable
+Outputs:
+  outputVPC:
+    Description: A reference to the created VPC
+    Value: !Ref CustomVPC
+  outputPrivateSubnets:
+    Description: A reference to the created Public subnet
+    Value: !Ref PublicSubnet
+  outputPrivateRouteTable:
+    Description: A reference to the created PublicRouteTable
+    Value: !Ref PublicRouteTable
+  outputPrivateSubnetRouteTableAssociation:
+    Description: A reference to the created PublicSubnetRouteTableAssociation
+    Value: !Ref PublicSubnetRouteTableAssociation
