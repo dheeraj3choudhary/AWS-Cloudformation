@@ -5,11 +5,11 @@ Parameters:
   CustomVPC:
     Description: Select One VPC available in your existing account
     Type: AWS::EC2::VPC::Id
-    Default: "vpc-0a7cd5f987e5379fe"
+    Default: "<Your default VPC ID>"
   PublicSubnet:
     Description: Select one public subnet available in your existing account
     Type: AWS::EC2::Subnet::Id
-    Default: "subnet-0557ed7093c776d37"
+    Default: "<Your default Internet Gateway ID>"
 Resources:
   MyNACL:
     Type: AWS::EC2::NetworkAcl
