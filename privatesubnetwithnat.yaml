@@ -1,0 +1,77 @@
+# Author :- Dheeraj Choudhary
+AWSTemplateFormatVersion: 2010-09-09
+Description: This template will create Private Subnet, Nat Gateway, Elastic Ip, Private Route Table and associate Private Route Table To Private Subnet
+Parameters:
+  CustomVPC:
+    Description: Select One VPC available in your existing account
+    Type: AWS::EC2::VPC::Id
+    Default: "vpc-0a7cd5f987e5379fe"
+  CustomInternetGateway:
+    Description: Select One internet gateway available in your existing account
+    Type: String
+    Default: "igw-0f49c140e9b981dc3"
+  PublicSubnet:
+    Description: Select one public subnet available in your existing account
+    Type: AWS::EC2::Subnet::Id
+    Default: "subnet-0557ed7093c776d37"
+Resources:
+  PrivateSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      MapPublicIpOnLaunch: true
+      VpcId: !Ref CustomVPC
+      CidrBlock: 10.0.0.64/26
+      Tags:
+        - Key: Name
+          Value: PrivateSubnet
+  eipforNatGateway:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+  natGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt eipforNatGateway.AllocationId
+      SubnetId: !Ref PublicSubnet
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref CustomVPC
+      Tags:
+      - Key: Name
+        Value: PrivateRouteTable
+  PrivateRoute:            # Private route table can access web via NAT (created below)
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      # Route traffic through the NAT Gateway:
+      NatGatewayId: !Ref natGateway
+  PrivateSubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet
+      RouteTableId: !Ref PrivateRouteTable
+Outputs:
+  outputVPC:
+    Description: A reference to the created VPC
+    Value: !Ref CustomVPC
+  outputPrivateSubnets:
+    Description: A reference to the created Private subnet
+    Value: !Ref PrivateSubnet
+  outputEipforNatGateway:
+    Description: A reference to the created EipforNatGateway
+    Value: !Ref eipforNatGateway
+  outputNatGateway:
+    Description: A reference to the created NatGateway
+    Value: !Ref natGateway
+  outputPrivateRouteTable:
+    Description: A reference to the created Private Route Table
+    Value: !Ref PrivateRouteTable
+  outputPrivateRoute:
+    Description: A reference to the created Private Route
+    Value: !Ref PrivateRoute
+  outputPrivateSubnetRouteTableAssociation:
+    Description: A reference to the created Private Subnet RouteTable Association
+    Value: !Ref PrivateSubnetARouteTableAssociation
