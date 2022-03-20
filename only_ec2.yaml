@@ -1,0 +1,19 @@
+# Author :- Dheeraj Choudhary
+AWSTemplateFormatVersion: 2010-09-09
+Description: This template will create EC2 Instance
+Resources:
+  UbuntuInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      KeyName: <Add your keyname>
+      ImageId: 'ami-04505e74c0741db8d'
+      InstanceType: t2.micro
+      SecurityGroupIds:
+        - <Add your security group ID>
+      Tags:
+        - Key: Name
+          Value: Ubuntu Server
+Outputs:
+  outputUbuntuInstance:
+    Description: A reference to the created EC2 Instance
+    Value: !Ref UbuntuInstance
