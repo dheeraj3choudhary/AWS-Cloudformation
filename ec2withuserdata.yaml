@@ -1,0 +1,28 @@
+# Author :- Dheeraj Choudhary
+AWSTemplateFormatVersion: 2010-09-09
+Description: This template will create EC2 Instance with Userdata
+  UbuntuInstance:
+    Type: 'AWS::EC2::Instance'
+    Properties: 
+      ImageId: "ami-04505e74c0741db8d"
+      InstanceType: t2.micro
+      KeyName: CustomVPC
+      Tags:
+        - Key: Name
+          Value: "Ubuntu"
+      SecurityGroupIds: 
+        - sg-06430544311d0afbf
+      UserData:
+        Fn::Base64: 
+          !Sub |
+            #!/bin/bash
+            sudo apt-get update -y
+            sudo apt-get install -y apache2
+            sudo ufw allow -y 'Apache'
+            sudo systemctl start apache2
+            sudo systemctl enable apache2
+            echo Hello World from $(hostname -f) > /var/www/html/index.html
+Outputs:
+  outputUbuntuInstance:
+    Description: A reference to the created EC2 Instance
+    Value: !Ref UbuntuInstance
