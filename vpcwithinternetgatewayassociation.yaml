@@ -1,0 +1,24 @@
+# Author :- Dheeraj Choudhary
+AWSTemplateFormatVersion: 2010-09-09
+Description: This template will create Internet gateway and attach that internet gateway to VPC.
+Parameters:
+  CustomVPC:
+    Description: Select One VPC available in your existing account
+    Type: AWS::EC2::VPC::Id
+    Default: <Default VPC ID>
+Resources:
+  CustomInternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: VPC_internet_Gateway
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref CustomVPC
+      InternetGatewayId: !Ref CustomInternetGateway
+Outputs:
+  outputCustomInternetGateway:
+    Description: A reference to the created security group
+    Value: !Ref CustomInternetGateway
