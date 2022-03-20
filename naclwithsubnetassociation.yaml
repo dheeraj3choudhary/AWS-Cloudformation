@@ -1,0 +1,62 @@
+# Author :- Dheeraj Choudhary
+AWSTemplateFormatVersion: 2010-09-09
+Description: This template will create NACL, NACL Inbound & Outbound Routes And Associate Nacl With Subnet
+Parameters:
+  CustomVPC:
+    Description: Select One VPC available in your existing account
+    Type: AWS::EC2::VPC::Id
+    Default: "vpc-0a7cd5f987e5379fe"
+  PublicSubnet:
+    Description: Select one public subnet available in your existing account
+    Type: AWS::EC2::Subnet::Id
+    Default: "subnet-0557ed7093c776d37"
+Resources:
+  MyNACL:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+       VpcId: !Ref CustomVPC
+       Tags:
+       - Key: Name
+         Value: Nacl
+  InboundRule:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+       NetworkAclId:
+         Ref: MyNACL
+       RuleNumber: 100
+       Protocol: 6
+       RuleAction: allow
+       CidrBlock: 172.16.0.0/24
+       PortRange:
+         From: 22
+         To: 22
+  OutboundRule:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+       NetworkAclId:
+         Ref: MyNACL
+       RuleNumber: 100
+       Protocol: -1
+       Egress: true
+       RuleAction: allow
+       CidrBlock: 0.0.0.0/0
+  mySubnetNetworkAclAssociation:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+       SubnetId:
+         Ref: PublicSubnet
+       NetworkAclId:
+         Ref: MyNACL
+Outputs:
+  outputNACL:
+    Description: A reference to the created NACL
+    Value: !Ref MyNACL
+  outputInboundRule:
+    Description: A reference to the created NACL Inbound Rule
+    Value: !Ref InboundRule
+  outputNACLOutboundRule:
+    Description: A reference to the created NACL Outbound Rule
+    Value: !Ref OutboundRule
+  outputNACLSubnetNetworkAclAssociation:
+    Description: A reference to the created NACL Subnet NetworkAcl Association
+    Value: !Ref mySubnetNetworkAclAssociation
