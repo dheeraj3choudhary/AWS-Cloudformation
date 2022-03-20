@@ -11,14 +11,7 @@ Resources:
       Tags:
         - Key: Name
           Value: CutomVPC
-  CustomInternetGateway:
-    Type: AWS::EC2::InternetGateway
-    Properties:
-      Tags:
-        - Key: Name
-          Value: VPC_internet_Gateway
-  AttachGateway:
-    Type: AWS::EC2::VPCGatewayAttachment
-    Properties:
-      VpcId: !Ref CustomVPC
-      InternetGatewayId: !Ref CustomInternetGateway
+Outputs:
+  outputCustomVPC:
+    Description: A reference to the created security group
+    Value: !Ref CustomVPC
