@@ -13,5 +13,5 @@ Resources:
           Value: CutomVPC
 Outputs:
   outputCustomVPC:
-    Description: A reference to the created security group
+    Description: A reference to the created VPC
     Value: !Ref CustomVPC
