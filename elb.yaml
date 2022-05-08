@@ -1,0 +1,134 @@
+# Author :- Dheeraj Choudhary
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'This template will create EC2 instances and associate it to target group and create ELB along with listener'
+Parameters:
+  CustomVPC:
+    Description: Select One VPC available in your existing account
+    Type: AWS::EC2::VPC::Id
+    Default: "<your default VPC ID>"
+  PublicSubnet1:
+    Description: Select one public subnet available in your existing account
+    Type: AWS::EC2::Subnet::Id
+    Default: "<your default public subnet id>"
+  PublicSubnet2:
+    Description: Select one public subnet available in your existing account
+    Type: AWS::EC2::Subnet::Id
+    Default: "<your default public subnet id>"
+Resources: 
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref CustomVPC
+      GroupName: "AllowEc2Traffic"
+      GroupDescription: "Enable SSH access and HTTP access on the inbound port for EC2"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: InstanceSecurityGroup
+  UbuntuInstance1:
+    Type: AWS::EC2::Instance
+    Properties:
+      KeyName: CustomVPC
+      ImageId: ami-04505e74c0741db8d
+      SubnetId: !Ref PublicSubnet1
+      InstanceType: t2.micro
+      SecurityGroupIds:
+        - !Ref InstanceSecurityGroup
+      Tags:
+        - Key: Name
+          Value: UbuntuInstanceWithUserdata1
+  UbuntuInstance2:
+    Type: AWS::EC2::Instance
+    Properties:
+      KeyName: CustomVPC
+      ImageId: ami-04505e74c0741db8d
+      InstanceType: t2.micro
+      SubnetId: !Ref PublicSubnet2
+      SecurityGroupIds:
+        - !Ref InstanceSecurityGroup
+      Tags:
+        - Key: Name
+          Value: UbuntuInstanceWithUserdata2
+  ELBTargetGroup:
+   Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+   Properties:
+     HealthCheckIntervalSeconds: 6
+     HealthCheckTimeoutSeconds: 5
+     HealthyThresholdCount: 2
+     Port: 80
+     Protocol: HTTP
+     UnhealthyThresholdCount: 2
+     VpcId: !Ref CustomVPC
+     TargetType: instance
+     Targets: 
+       - Id: !Ref UbuntuInstance1
+         Port: 80
+       - Id: !Ref UbuntuInstance2
+         Port: 80
+  ELBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: "ELBTraffic"
+      GroupDescription: "Enable HTTP access on the inbound port for ELB"
+      VpcId: !Ref CustomVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: ELBSecurityGroup
+  ElasticLoadBalancer:
+    Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
+    Properties:
+      Subnets: 
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+      SecurityGroups: 
+        - !Ref ELBSecurityGroup
+  ElbListener:
+   Type: 'AWS::ElasticLoadBalancingV2::Listener'
+   Properties:
+     DefaultActions:
+       - Type: forward
+         TargetGroupArn: !Ref ELBTargetGroup
+     LoadBalancerArn: !Ref ElasticLoadBalancer
+     Port: '80'
+     Protocol: HTTP
+
+Outputs:
+  outputInstanceSecurityGroup:
+    Description: A reference to the created security group
+    Value: !Ref InstanceSecurityGroup
+  outputUbuntuInstance:
+    Description: A reference to the created EC2 Instance
+    Value: !Ref UbuntuInstance1
+  outputUbuntuInstance:
+    Description: A reference to the created EC2 Instance
+    Value: !Ref UbuntuInstance2
+  outputELBTargetGroup:
+    Description: A reference to the created Target Group
+    Value: !Ref ELBTargetGroup
+  outputELBSecurityGroup:
+    Description: A reference to the created Security Group
+    Value: !Ref ELBSecurityGroup
+  outputElasticLoadBalancer:
+    Description: A reference to the created Elastic Load Balancer
+    Value: !Ref ElasticLoadBalancer
+  outputElasticListener:
+    Description: A reference to the created Elastic Load Balancer Listener
+    Value: !Ref ElbListener
