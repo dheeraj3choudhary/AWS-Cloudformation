@@ -1,0 +1,242 @@
+# Author :- Dheeraj Choudhary
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: Automate detection of unused EBS volumes using serverless framework
+
+Parameters: 
+  CustomVPC:
+    Description: Select One VPC available in your existing account
+    Type: AWS::EC2::VPC::Id
+    Default: "<Your VPC ID>"
+  PublicSubnet1:
+    Description: Select one public subnet available in your existing account
+    Type: AWS::EC2::Subnet::Id
+    Default: "<Your Public Subnet>"
+  PublicSubnet2:
+    Description: Select one public subnet available in your existing account
+    Type: AWS::EC2::Subnet::Id
+    Default: "<Your Public Subnet>"
+
+Resources: 
+  VPCSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref CustomVPC
+      GroupName: "AllowVPCTraffic"
+      GroupDescription: "Allow All Traffic"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: VPCSecurityGroup
+  LambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref CustomVPC
+      GroupName: "AllowEc2Traffic"
+      GroupDescription: "Allow All Traffic"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: LambdaSecurityGroup
+
+  # Create Endpoints
+  ec2_endpoint:
+    Type: 'AWS::EC2::VPCEndpoint'
+    Properties:
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.ec2'
+      VpcId: !Ref CustomVPC
+      SubnetIds: 
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+      SecurityGroupIds:
+        - !Ref VPCSecurityGroup
+  event_endpoint:
+    Type: 'AWS::EC2::VPCEndpoint'
+    Properties:
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.event'
+      VpcId: !Ref CustomVPC
+      SubnetIds: 
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+      SecurityGroupIds:
+        - !Ref VPCSecurityGroup  
+  sns_endpoint:
+    Type: 'AWS::EC2::VPCEndpoint'
+    Properties:
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.sns'
+      VpcId: !Ref CustomVPC
+      SubnetIds: 
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+      SecurityGroupIds:
+        - !Ref VPCSecurityGroup  
+  lambda_endpoint:
+    Type: 'AWS::EC2::VPCEndpoint'
+    Properties:
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.lambda'
+      VpcId: !Ref CustomVPC
+      SubnetIds: 
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+      SecurityGroupIds:
+        - !Ref VPCSecurityGroup
+  ebs_endpoint:
+    Type: 'AWS::EC2::VPCEndpoint'
+    Properties:
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.ebs'
+      VpcId: !Ref CustomVPC
+      SubnetIds: 
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+      SecurityGroupIds:
+        - !Ref VPCSecurityGroup
+
+
+  CustomSNSTopic: 
+    Type: AWS::SNS::Topic
+    Properties: 
+      DisplayName: "CustomSNS"
+      Subscription: 
+        - Endpoint: "<Your email id>"
+          Protocol: "email"
+      TopicName: "CustomSNS"
+
+  # Lambda IAM Role with Embedded Policy
+  UnusedEbsDetectionLambdaRole: 
+    Type: "AWS::IAM::Role"
+    Properties: 
+      RoleName: "UnusedEbsDetectionLambdaRole"
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - 
+            Effect: "Allow"
+            Principal: 
+              Service: 
+                - "lambda.amazonaws.com"
+            Action: 
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+      Policies:
+        - PolicyName: "UnusedEbsDetectionLambdaPolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "sns:ListSubscriptionsByTopic"
+                  - "sns:GetTopicAttributes"
+                  - "sns:ListSMSSandboxPhoneNumbers"
+                  - "logs:*"
+                  - "sns:ListTopics"
+                  - "sns:ListSubscriptions"
+                  - "ec2:DescribeVolumeAttribute"
+                  - "sns:ListOriginationNumbers"
+                  - "sns:ListEndpointsByPlatformApplication"
+                  - "sns:Publish"
+                  - "ec2:DescribeVolumeStatus"
+                  - "ec2:DescribeVolumes"
+                  - "sns:ListPlatformApplications"
+                Resource: '*'
+  
+  # Lambda function to find unused volumes and notify via email
+  UnusedEbsDetectionLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      MemorySize: 320
+      Timeout: 300
+      Runtime: python3.8
+      Role: !GetAtt UnusedEbsDetectionLambdaRole.Arn
+      Handler: index.handler
+      Code:
+        ZipFile: |
+          import boto3
+          import os
+          ec2 = boto3.client('ec2')
+          sns_client = boto3.client('sns')
+          volumes = ec2.describe_volumes()
+          
+          def lambda_handler(event, context):
+              unused_volumes = []
+              for vol in volumes['Volumes']:
+                  if len(vol['Attachments']) == 0:
+                      vol1 = ("-----Unused Volume ID = {}------".format(vol['VolumeId']))
+                      unused_volumes.append(vol1)
+              
+              #email
+              sns_topic_arn = os.environ['Topic_ARN']
+              sns_client.publish(
+                  TopicArn= sns_topic_arn,
+                  Subject='Warning - Unused Volume List',
+                  Message=str(unused_volumes)
+              )
+              return "success"
+      Description: Invoke a function during stack creation.
+      Environment: 
+        Variables: 
+          Topic_ARN: !Ref CustomSNSTopic
+      TracingConfig:
+        Mode: Active
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref LambdaSecurityGroup
+        SubnetIds:
+          - !Ref PublicSubnet1
+          - !Ref PublicSubnet2
+  # Provide permission for Eventbridge to invoke lambda function
+  PermissionForEventsToInvokeLambda: 
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !GetAtt UnusedEbsDetectionLambda.Arn
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt UnusedEbsDetectionScheduledRule.Arn
+  # Configure event to ne triggered at 11am on saturday
+  UnusedEbsDetectionScheduledRule: 
+    Type: AWS::Events::Rule
+    Properties: 
+      Description: "ScheduledRule"
+      ScheduleExpression: "cron(0 11 ? * 7 *)"
+      State: "ENABLED"
+      Targets: 
+        - Arn: !GetAtt UnusedEbsDetectionLambda.Arn
+          Id: "UnusedEbsDetectionLambda"
+
+Outputs: 
+  outputCustomSNSTopic: 
+    Description: Arn of Created SNS Topic
+    Value: !Ref CustomSNSTopic
+  outputLambdaSecurityGroup: 
+    Description: Arn of Created SNS Topic
+    Value: !Ref LambdaSecurityGroup
+  outputUnusedEbsDetectionLambdaRole: 
+    Description: Arn of Created SNS Topic
+    Value: !Ref UnusedEbsDetectionLambdaRole
+  outputUnusedEbsDetectionLambda: 
+    Description: Arn of Created SNS Topic
+    Value: !Ref UnusedEbsDetectionLambda
+  outputPermissionForEventsToInvokeLambda: 
+    Description: Arn of Created SNS Topic
+    Value: !Ref PermissionForEventsToInvokeLambda
+  outputUnusedEbsDetectionScheduledRule: 
+    Description: Arn of Created SNS Topic
+    Value: !Ref UnusedEbsDetectionScheduledRule
