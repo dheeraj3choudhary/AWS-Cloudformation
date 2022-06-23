@@ -1,0 +1,110 @@
+# Author :- Dheeraj Choudhary
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'This template will create ELB Security Group, ELB, ELB Listener, Target Group, Launch Configuration and Autoscaling group'
+Parameters:
+  CustomVPC:
+    Description: Select One VPC available in your existing account
+    Type: AWS::EC2::VPC::Id
+    Default: <VPC Id 1>
+  PublicSubnets:
+    Type: CommaDelimitedList
+    Description: The list of SubnetIds in your Virtual Private Cloud (VPC)
+    Default: <subnet id 1>, <subnet id 2> #You can add multiple subnet ids here
+Resources: 
+  ELBTargetGroup:
+   Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+   Properties:
+     HealthCheckIntervalSeconds: 6
+     HealthCheckTimeoutSeconds: 5
+     HealthyThresholdCount: 2
+     Port: 80
+     Protocol: HTTP
+     UnhealthyThresholdCount: 2
+     VpcId: !Ref CustomVPC
+     TargetType: instance
+  ELBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: "ELBTraffic"
+      GroupDescription: "Enable HTTP access on the inbound port for ELB"
+      VpcId: !Ref CustomVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: ELBSecurityGroup
+  ElasticLoadBalancer:
+    Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
+    Properties:
+      Subnets: !Ref PublicSubnets
+      SecurityGroups: 
+        - !Ref ELBSecurityGroup
+  ElbListener:
+   Type: 'AWS::ElasticLoadBalancingV2::Listener'
+   Properties:
+     DefaultActions:
+       - Type: forward
+         TargetGroupArn: !Ref ELBTargetGroup
+     LoadBalancerArn: !Ref ElasticLoadBalancer
+     Port: '80'
+     Protocol: HTTP
+  AsgConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      InstanceType: t2.micro
+      SecurityGroups:
+      - !Ref ELBSecurityGroup
+      ImageId: "ami-04505e74c0741db8d"
+      UserData:
+        Fn::Base64: 
+          !Sub |
+            #!/bin/bash
+            sudo su
+            sudo apt-get update -y
+            sudo apt-get install -y apache2
+            sudo ufw allow -y 'Apache'
+            sudo systemctl start apache2
+            sudo systemctl enable apache2
+            echo Hello Viewers from $(hostname -f) > /var/www/html/index.html
+  AsgGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    DependsOn:
+      - ELBTargetGroup
+      - ElasticLoadBalancer
+    Properties:
+      #PropagateAtLaunch: 'true'
+      VPCZoneIdentifier: !Ref PublicSubnets
+      LaunchConfigurationName: !Ref AsgConfig
+      MinSize: '1'
+      MaxSize: '2'
+      HealthCheckGracePeriod: 300
+      MaxInstanceLifetime: 2592000
+      TargetGroupARNs:
+        - !Ref ELBTargetGroup
+Outputs:
+  outputELBTargetGroup:
+    Description: A reference to the created Target Group
+    Value: !Ref ELBTargetGroup
+  outputELBSecurityGroup:
+    Description: A reference to the created Security Group
+    Value: !Ref ELBSecurityGroup
+  outputElasticLoadBalancer:
+    Description: A reference to the created Elastic Load Balancer
+    Value: !Ref ElasticLoadBalancer
+  outputElasticListener:
+    Description: A reference to the created Elastic Load Balancer Listener
+    Value: !Ref ElbListener
+  outputAsgConfig: 
+    Description: Id for autoscaling launch configuration
+    Value: !Ref AsgConfig
+  outputAsgGroup: 
+    Description: Id for autoscaling group
+    Value: !Ref AsgGroup
