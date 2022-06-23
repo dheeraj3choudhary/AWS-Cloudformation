@@ -1,0 +1,70 @@
+# Author:- Dheeraj Choudhary
+AWSTemplateFormatVersion: 2010-09-09
+Description: This template creates launch configuration along with security group and autoscaling group
+
+Parameters:
+  PublicSubnets:
+    Type: CommaDelimitedList
+    Description: The list of SubnetIds in your Virtual Private Cloud (VPC)
+    Default: <subnet id 1>, <subnet id 2> #You can add multiple subnet ids here
+Resources:
+  ASGSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: AllowEC2TrafficForASG
+      GroupDescription: Enable SSH access and HTTP access on the inbound port for launch configuration
+      VpcId: <vpc id>  #Make sure this is same vpc id where your autoscaling group will launch
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: ASGSecurityGroup
+  AsgConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      InstanceType: t2.micro
+      SecurityGroups:
+      - !Ref ASGSecurityGroup
+      ImageId: "ami-04505e74c0741db8d"
+      UserData:
+        Fn::Base64: 
+          !Sub |
+            #!/bin/bash
+            sudo su
+            sudo apt-get update -y
+            sudo apt-get install -y apache2
+            sudo ufw allow -y 'Apache'
+            sudo systemctl start apache2
+            sudo systemctl enable apache2
+            echo Hello Viewers from $(hostname -f) > /var/www/html/index.html
+
+  AsgGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier: !Ref PublicSubnets
+      LaunchConfigurationName: !Ref AsgConfig
+      MinSize: '1'
+      MaxSize: '2'
+      HealthCheckGracePeriod: 300
+      MaxInstanceLifetime: 2592000
+      Tags:
+        - Key: Name
+          Value: AsgGroup
+
+Outputs: 
+  outputASGSecurityGroup: 
+    Description: Id of security group created for autoscaling launch configuration
+    Value: !Ref ASGSecurityGroup
+  outputAsgConfig: 
+    Description: Id for autoscaling launch configuration
+    Value: !Ref AsgConfig
+  outputAsgGroup: 
+    Description: Id for autoscaling group
+    Value: !Ref AsgGroup
