@@ -1,6 +1,6 @@
 <div align="center">
 
-# CLOUDFORMATION SERIES
+![Cloudformation Git Repo](https://user-images.githubusercontent.com/88716270/196915628-7561a07e-93d3-4fd3-a7ab-7f88a5bc9d9e.png)
 
 ### Welcome to the series of AWS Cloudformation 👨🏻‍💻. Start your journey towards infra-as-code developer as part of your devops role.
 
