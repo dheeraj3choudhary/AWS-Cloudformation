@@ -45,47 +45,47 @@
 
 ### ✅ Part 1:- Adding Visual Studio Code Cloudformation Extension 
 
-[![1](https://i9.ytimg.com/vi_webp/M5DOZZN1qmk/mqdefault.webp?v=626bfda4&sqp=CIiOxJoG&rs=AOn4CLCHwKRcNN-vtAL26ILNPyoczaj3qw)](https://www.youtube.com/watch?v=M5DOZZN1qmk "")
+[![image](https://user-images.githubusercontent.com/88716270/197318831-7e79f529-c744-4b9a-9902-c1a285dd1fef.png)](https://www.youtube.com/watch?v=M5DOZZN1qmk "")
 
 ### ✅ Part 2:- Adding VS Code Indentation Extension For AWS Cloudformation
 
-[![2](https://i9.ytimg.com/vi_webp/8NB9unLpWwI/mqdefault.webp?v=626c30d5&sqp=CIiOxJoG&rs=AOn4CLAsnEx_cpdHROK4IBmQu17f81VcwQ)](https://www.youtube.com/watch?v=8NB9unLpWwI "")
+[![image](https://user-images.githubusercontent.com/88716270/197318896-8ac2ad13-0bc4-48fa-9c8a-34a73b2c0423.png)](https://www.youtube.com/watch?v=8NB9unLpWwI "")
 
 ### ✅ Part 3:- Launch Virtual Private Cloud [VPC]
 
-[![3](https://i9.ytimg.com/vi_webp/8DGRXJGueUg/mqdefault.webp?v=6266a004&sqp=CIiOxJoG&rs=AOn4CLChBB-H_ESvyLhbjgi1FDurZuLmcA)](https://www.youtube.com/watch?v=8DGRXJGueUg "")
+[![image](https://user-images.githubusercontent.com/88716270/197318944-9c828cb2-5478-41b8-a57b-c47629a1f3fb.png)](https://www.youtube.com/watch?v=8DGRXJGueUg "")
 
 ### ✅ Part 4:- Create AWS Internet Gateway [IGW] & Associate
 
-[![4](https://i9.ytimg.com/vi/5Q1MdzvIOMw/mqdefault.jpg?v=6266a796&sqp=CIiOxJoG&rs=AOn4CLDDMIipFZcYKQHHk_Yj9OaAQefuvw)](https://www.youtube.com/watch?v=5Q1MdzvIOMw "")
+[![image](https://user-images.githubusercontent.com/88716270/197318956-6dbbf28f-8c83-480b-b541-17e7913ae962.png)](https://www.youtube.com/watch?v=5Q1MdzvIOMw "")
 
 ### ✅ Part 5:- Public Subnet & Route Table Creation & Association
 
-[![5](https://i9.ytimg.com/vi/zJsN3kYGPgA/mqdefault.jpg?v=626d4789&sqp=CIiOxJoG&rs=AOn4CLDGYEsT5TXj5qrmmwXTKX_4b7Uopw)](https://www.youtube.com/watch?v=zJsN3kYGPgA "")
+[![image](https://user-images.githubusercontent.com/88716270/197318970-2b607dde-5e1f-4132-ba6a-b61e9e8fc628.png)](https://www.youtube.com/watch?v=zJsN3kYGPgA "")
 
 ### ✅ Part 6:- Private Subnet & Route Table Creation & Association
 
-[![6](https://i9.ytimg.com/vi_webp/xY6pLKr3pF0/mqdefault.webp?v=626d4cce&sqp=CIiOxJoG&rs=AOn4CLClAwE06NLil3H-mqr2nF5wkvFgqw)](https://www.youtube.com/watch?v=xY6pLKr3pF0 "")
+[![image](https://user-images.githubusercontent.com/88716270/197318995-7df06747-46f1-4aa0-b4ed-498119691922.png)](https://www.youtube.com/watch?v=xY6pLKr3pF0 "")
 
 ### ✅ Part 7:- PrivateSubnet, NatGateway, ElasticIp, PrivateRouteTable & Associate
 
-[![7](https://i9.ytimg.com/vi/pzZz0ayZkxA/mqdefault.jpg?v=626d6d19&sqp=CIiOxJoG&rs=AOn4CLARjNJ2z-iZa8z-NGcgD7AjToPiqg)](https://www.youtube.com/watch?v=pzZz0ayZkxA "")
+[![image](https://user-images.githubusercontent.com/88716270/197319011-c9e7fa7a-0221-4cbb-98b4-dd1748bbe6a7.png)](https://www.youtube.com/watch?v=pzZz0ayZkxA "")
 
 ### ✅ Part 8:- Create NACL, Inbound,Outbound Routes & Associate
 
-[![8](https://i9.ytimg.com/vi/Ip6w_bP7uwU/mqdefault.jpg?v=626d90c5&sqp=CIiOxJoG&rs=AOn4CLAbmUCZy5OsYjpfNzkCx_l09DcGrg)](https://www.youtube.com/watch?v=Ip6w_bP7uwU "")
+[![image](https://user-images.githubusercontent.com/88716270/197319072-6712c8d7-a91a-4100-b8a2-bf2a5161f091.png)](https://www.youtube.com/watch?v=Ip6w_bP7uwU "")
 
 ### ✅ Part 9:- Launch Security Group
 
-[![9](https://i9.ytimg.com/vi_webp/rrAXD8X40cQ/mqdefault.webp?v=626fd298&sqp=CIiOxJoG&rs=AOn4CLBOAJ6jciRLeuwpxo79317dh3Wm7A)](https://www.youtube.com/watch?v=rrAXD8X40cQ "")
+[![image](https://user-images.githubusercontent.com/88716270/197319081-83f5040a-e8d5-40f5-a649-cc00ebf7df54.png)](https://www.youtube.com/watch?v=rrAXD8X40cQ "")
 
 ### ✅ Part 10:- Launch EC2 instance
 
-[![10](https://i9.ytimg.com/vi_webp/UJrh7sJ6oSU/mqdefault.webp?v=626fd4ed&sqp=CIiOxJoG&rs=AOn4CLB_KtaGGFv7wIe3viE_OwfQOSawpg)](https://www.youtube.com/watch?v=UJrh7sJ6oSU "")
+[![image](https://user-images.githubusercontent.com/88716270/197319109-08bf866c-5a35-43a7-9277-2c7f278ecd2e.png)](https://www.youtube.com/watch?v=UJrh7sJ6oSU "")
 
 ### ✅ Part 11:- Launch EC2 instance with userdata
 
-[![11](https://i9.ytimg.com/vi_webp/8teSEJTocnc/mqdefault.webp?v=626fd90c&sqp=CIiOxJoG&rs=AOn4CLA0DZay5HS9C8-EPFLdj58pxsCFvA)](https://www.youtube.com/watch?v=8teSEJTocnc "")
+[![image](https://user-images.githubusercontent.com/88716270/197319174-ca7cbd0b-517e-49c9-b86e-0740443994dd.png)](https://www.youtube.com/watch?v=8teSEJTocnc "")
 
 <div align="center">
 
