@@ -1,6 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: This template will launch EC2 & Security Group and associate them together allowing http and ssh access to the ec2 instance. And add another EC2 instance.
-
+Description: Lambda backed custom resource.
 Resources:
   UnusedEbsDetectionLambdaRole: 
     Type: "AWS::IAM::Role"
