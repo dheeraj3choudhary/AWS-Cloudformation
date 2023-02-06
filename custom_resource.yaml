@@ -1,0 +1,102 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: This template will launch EC2 & Security Group and associate them together allowing http and ssh access to the ec2 instance. And add another EC2 instance.
+
+Resources:
+  UnusedEbsDetectionLambdaRole: 
+    Type: "AWS::IAM::Role"
+    Properties: 
+      RoleName: "UnusedEbsDetectionLambdaRole"
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - 
+            Effect: "Allow"
+            Principal: 
+              Service: 
+                - "lambda.amazonaws.com"
+            Action: 
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+      Policies:
+        - PolicyName: "UnusedEbsDetectionLambdaPolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: '*'
+                Resource: '*'
+  CustomBackedLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: CustomBackedLambda
+      Runtime: python3.9
+      Role: !GetAtt UnusedEbsDetectionLambdaRole.Arn
+      Handler: index.lambda_handler
+      Timeout: 90
+      Code:
+        ZipFile: |
+          import cfnresponse
+          import logging
+          import random
+          # Init of the logging module
+          logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+          def lambda_handler(event, context):
+              if event.get('RequestType') == 'Create':
+                    number = random.randint(0,1000)
+                    message = f"This code is finally working after {number} times!" if number > 500 else f"This crappy code is still not working after {number} times!"
+                    responseData = {}
+                    responseData['message'] = message
+                    logging.info('Sending %s to cloudformation', responseData['message'])
+                    cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData)
+              elif event.get('RequestType') == 'Delete':
+                    responseData = {}
+                    responseData['message'] = "Goodbye from lambda"
+                    logging.info('Sending %s to cloudformation', responseData['message'])
+                    cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData)
+              else:
+                  logging.error('Unknown operation: %s', event.get('RequestType'))
+      Environment:
+        Variables:
+          myvar: var01
+      Description: Custom lambda cloudformation
+
+  InvokeCustomLambda:
+    DependsOn: CustomBackedLambda
+    Type: Custom::InvokeCustomLambda
+    Properties:
+      ServiceToken: !GetAtt CustomBackedLambda.Arn
+
+  BasicParameter:
+    Type: AWS::SSM::Parameter
+    DependsOn: InvokeCustomLambda
+    Properties:
+      Name: Get_message
+      Type: String
+      Value: !GetAtt InvokeCustomLambda.message
+      Description: SSM Parameter for running date command.
+      Tags:
+        Environment: DEV
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    DependsOn: BasicParameter
+    Properties:
+      GroupName: AllowEC2Traffic
+      GroupDescription: !GetAtt BasicParameter.Value     #'{{resolve:ssm:/Get_message:1}}'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: InstanceSecurityGroup
+
+Outputs:
+  CustomLambdaOutput: 
+    Description: Message from custom lambda
+    Value: !GetAtt InvokeCustomLambda.message
